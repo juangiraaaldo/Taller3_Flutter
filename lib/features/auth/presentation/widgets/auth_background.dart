@@ -11,11 +11,9 @@ class AuthBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [AppColors.coral, Color(0xFFFF876F), AppColors.deepPink],
-          stops: [0, .42, 1],
+        image: DecorationImage(
+          image: AssetImage('lib/assets/fondo.png'),
+          fit: BoxFit.cover,
         ),
       ),
       child: SafeArea(child: child),

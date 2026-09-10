@@ -47,7 +47,6 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 child: Column(
                   children: [
-                    const AuthIllustration(),
                     _modeSelector(),
                     const SizedBox(height: 26),
                     _loginForm(),
