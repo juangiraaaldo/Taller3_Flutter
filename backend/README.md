@@ -18,7 +18,17 @@ Edita `.env` y reemplaza `MONGO_URI` y `JWT_SECRET` antes de iniciar el servidor
 - `GET /`: verifica que la API este disponible.
 - `POST /api/auth/register`: crea un usuario.
 - `POST /api/auth/login`: inicia sesion y devuelve un JWT.
+- `POST /api/auth/forgot-password`: genera un token de recuperacion temporal.
+- `POST /api/auth/reset-password`: cambia la contrasena usando el token temporal.
+- `POST /api/auth/logout`: cierra la sesion actual. Requiere `Authorization: Bearer <token>`.
 - `GET /api/auth/profile`: devuelve el perfil. Requiere `Authorization: Bearer <token>`.
+
+Para solicitar una recuperacion, envia `{ "email": "usuario@correo.com" }`.
+El token vence en 15 minutos. En desarrollo, el enlace se muestra en la
+terminal del backend; en produccion debe enviarse mediante un proveedor de
+correo electronico.
+
+Para restablecer la contrasena, envia `{ "token": "...", "password": "..." }`.
 
 ## Despliegue en Railway
 

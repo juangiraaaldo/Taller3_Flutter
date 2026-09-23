@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../data/auth_api.dart';
 import '../widgets/auth_background.dart';
 import 'forgot_password_page.dart';
 import 'register_page.dart';
@@ -16,7 +17,9 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _authApi = AuthApi();
   bool _obscurePassword = true;
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -26,12 +29,30 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _login() {
-    if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Listo para conectar con la API')),
-      );
+    if (!_formKey.currentState!.validate() || _loading) return;
+
+    setState(() => _loading = true);
+    _authApi
+        .login(
+          email: _emailController.text,
+          password: _passwordController.text,
+        )
+        .then((message) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message)),
+          );
+        })
+        .catchError((error) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(error.toString().replaceFirst('Exception: ', ''))),
+          );
+        })
+        .whenComplete(() {
+          if (mounted) setState(() => _loading = false);
+        });
     }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,8 +68,6 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 child: Column(
                   children: [
-                    _modeSelector(),
-                    const SizedBox(height: 26),
                     _loginForm(),
                     const SizedBox(height: 24),
                     TextButton(
@@ -61,7 +80,23 @@ class _LoginPageState extends State<LoginPage> {
                         '¿Olvidaste tu contraseña?',
                         style: TextStyle(
                           color: Colors.white,
-                          decoration: TextDecoration.underline,
+                          decoration: TextDecoration.none,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const RegisterPage(),
+                        ),
+                      ),
+                      child: const Text(
+                        'Registrar cuenta',
+                        style: TextStyle(
+                          color: Colors.white,
+                          decoration: TextDecoration.none,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -77,51 +112,6 @@ class _LoginPageState extends State<LoginPage> {
             );
           },
         ),
-      ),
-    );
-  }
-
-  Widget _modeSelector() {
-    return Container(
-      height: 66,
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: const Color(0x3D8D3F5A),
-        borderRadius: BorderRadius.circular(36),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: const Center(
-                child: Text(
-                  'Existing',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: InkWell(
-              onTap: () => Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const RegisterPage()),
-              ),
-              child: const Center(
-                child: Text(
-                  'New',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -174,10 +164,22 @@ class _LoginPageState extends State<LoginPage> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: const Text(
-                    'INICIAR SESIÓN',
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-                  ),
+                  child: _loading
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'INICIAR SESIÓN',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
             ),

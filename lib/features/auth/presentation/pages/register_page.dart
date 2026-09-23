@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../data/auth_api.dart';
 import '../widgets/auth_background.dart';
-import 'forgot_password_page.dart';
 import 'login.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -17,7 +17,9 @@ class _RegisterPageState extends State<RegisterPage> {
   final _name = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
+  final _authApi = AuthApi();
   bool _obscure = true;
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -31,12 +33,11 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: AuthBackground(
+        useGradient: true,
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 18, 24, 32),
           child: Column(
             children: [
-              _switcher(),
-              const SizedBox(height: 26),
               Container(
                 padding: const EdgeInsets.fromLTRB(26, 22, 26, 26),
                 decoration: BoxDecoration(
@@ -75,17 +76,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         width: double.infinity,
                         height: 58,
                         child: ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Cuenta lista para conectar con la API',
-                                  ),
-                                ),
-                              );
-                            }
-                          },
+                          onPressed: _register,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.pink,
                             foregroundColor: Colors.white,
@@ -93,13 +84,22 @@ class _RegisterPageState extends State<RegisterPage> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          child: const Text(
-                            'CREAR CUENTA',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
+                          child: _loading
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text(
+                                  'CREAR CUENTA',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
                         ),
                       ),
                     ],
@@ -108,14 +108,16 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
               const SizedBox(height: 18),
               TextButton(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const ForgotPasswordPage()),
+                onPressed: () => Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => const LoginPage()),
                 ),
                 child: const Text(
-                  '¿Olvidaste tu contraseña?',
+                  'Iniciar sesión',
                   style: TextStyle(
                     color: Colors.white,
-                    decoration: TextDecoration.underline,
+                    decoration: TextDecoration.none,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -126,49 +128,46 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _switcher() {
-    return Container(
-      height: 66,
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: const Color(0x3D8D3F5A),
-        borderRadius: BorderRadius.circular(36),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: InkWell(
-              onTap: () => Navigator.of(context).pushReplacement(
+  void _register() {
+    if (!_formKey.currentState!.validate() || _loading) return;
+
+    setState(() => _loading = true);
+    _authApi
+        .register(
+          name: _name.text,
+          email: _email.text,
+          password: _password.text,
+        )
+        .then((message) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('La cuenta se registró exitosamente'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Future.delayed(const Duration(milliseconds: 1200), () {
+            if (mounted) {
+              Navigator.of(context).pushReplacement(
                 MaterialPageRoute(builder: (_) => const LoginPage()),
+              );
+            }
+          });
+        })
+        .catchError((error) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                error.toString().replaceFirst('Exception: ', ''),
               ),
-              child: const Center(
-                child: Text(
-                  'Existing',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+              backgroundColor: Colors.red,
             ),
-          ),
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: const Center(
-                child: Text(
-                  'New',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+          );
+        })
+        .whenComplete(() {
+          if (mounted) setState(() => _loading = false);
+        });
   }
 
   Widget _input(

@@ -3,20 +3,45 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 
 class AuthBackground extends StatelessWidget {
-  const AuthBackground({required this.child, super.key});
+  const AuthBackground({
+    required this.child,
+    this.useGradient = false,
+    super.key,
+  });
 
   final Widget child;
+  final bool useGradient;
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('lib/assets/fondo.png'),
-          fit: BoxFit.cover,
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        const DecoratedBox(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('lib/assets/fondo.png'),
+              fit: BoxFit.cover,
+            ),
+          ),
         ),
-      ),
-      child: SafeArea(child: child),
+        if (useGradient)
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xBDF52F82),
+                  Color(0xA9FF8D68),
+                  Color(0xD9FFB15E),
+                ],
+                stops: [0.0, 0.55, 1.0],
+              ),
+            ),
+          ),
+        SafeArea(child: child),
+      ],
     );
   }
 }

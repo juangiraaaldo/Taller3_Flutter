@@ -23,6 +23,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: AuthBackground(
+        useGradient: true,
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
           child: Column(
