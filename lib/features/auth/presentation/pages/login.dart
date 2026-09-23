@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../data/auth_api.dart';
 import '../widgets/auth_background.dart';
-import 'forgot_password_page.dart';
+import 'forgot_password.dart';
 import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
