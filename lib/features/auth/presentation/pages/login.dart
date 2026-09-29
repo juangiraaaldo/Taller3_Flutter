@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../agenda/presentation/pages/agenda_list_page.dart';
 import '../../data/auth_api.dart';
 import '../widgets/auth_background.dart';
 import 'forgot_password_page.dart';
@@ -28,31 +29,31 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void _login() {
+  Future<void> _login() async {
     if (!_formKey.currentState!.validate() || _loading) return;
 
     setState(() => _loading = true);
-    _authApi
-        .login(
-          email: _emailController.text,
-          password: _passwordController.text,
-        )
-        .then((message) {
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(message)),
-          );
-        })
-        .catchError((error) {
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(error.toString().replaceFirst('Exception: ', ''))),
-          );
-        })
-        .whenComplete(() {
-          if (mounted) setState(() => _loading = false);
-        });
+    try {
+      await _authApi.login(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const AgendaListPage()),
+        (route) => false,
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error.toString().replaceFirst('Exception: ', '')),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,47 +67,50 @@ class _LoginPageState extends State<LoginPage> {
                 constraints: BoxConstraints(
                   minHeight: constraints.maxHeight - 48,
                 ),
-                child: Column(
-                  children: [
-                    _loginForm(),
-                    const SizedBox(height: 24),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const ForgotPasswordPage(),
+                child: IntrinsicHeight(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _loginForm(),
+                      const SizedBox(height: 24),
+                      TextButton(
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const ForgotPasswordPage(),
+                          ),
+                        ),
+                        child: const Text(
+                          '¿Olvidaste tu contraseña?',
+                          style: TextStyle(
+                            color: Colors.white,
+                            decoration: TextDecoration.none,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
-                      child: const Text(
-                        '¿Olvidaste tu contraseña?',
-                        style: TextStyle(
-                          color: Colors.white,
-                          decoration: TextDecoration.none,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                      TextButton(
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const RegisterPage(),
+                          ),
+                        ),
+                        child: const Text(
+                          'Registrar cuenta',
+                          style: TextStyle(
+                            color: Colors.white,
+                            decoration: TextDecoration.none,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const RegisterPage(),
-                        ),
-                      ),
-                      child: const Text(
-                        'Registrar cuenta',
-                        style: TextStyle(
-                          color: Colors.white,
-                          decoration: TextDecoration.none,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const _SocialDivider(),
-                    const SizedBox(height: 18),
-                    const _SocialButtons(),
-                  ],
+                      const SizedBox(height: 16),
+                      const _SocialDivider(),
+                      const SizedBox(height: 18),
+                      const _SocialButtons(),
+                    ],
+                  ),
                 ),
               ),
             );
@@ -158,7 +162,7 @@ class _LoginPageState extends State<LoginPage> {
                 child: ElevatedButton(
                   onPressed: _login,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.pink,
+                    backgroundColor: AppColors.authPink,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),

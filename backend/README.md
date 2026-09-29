@@ -22,6 +22,13 @@ Edita `.env` y reemplaza `MONGO_URI` y `JWT_SECRET` antes de iniciar el servidor
 - `POST /api/auth/reset-password`: cambia la contrasena usando el token temporal.
 - `POST /api/auth/logout`: cierra la sesion actual. Requiere `Authorization: Bearer <token>`.
 - `GET /api/auth/profile`: devuelve el perfil. Requiere `Authorization: Bearer <token>`.
+- `GET /api/tasks`: lista las tareas del usuario autenticado.
+- `POST /api/tasks`: crea una tarea con `title`, `description`, `dueDate` y `status`.
+- `PUT /api/tasks/:id`: actualiza una tarea propia.
+- `DELETE /api/tasks/:id`: elimina una tarea propia.
+
+Todas las rutas de tareas requieren `Authorization: Bearer <token>`. Cada operacion
+limita las tareas al usuario autenticado.
 
 Para solicitar una recuperacion, envia `{ "email": "usuario@correo.com" }`.
 El token vence en 15 minutos. En desarrollo, el enlace se muestra en la

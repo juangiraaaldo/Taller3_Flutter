@@ -4,6 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const connectDatabase = require('./config/database');
 const authRoutes = require('./routes/auth.routes');
+const taskRoutes = require('./routes/task.routes');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -16,6 +17,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/tasks', taskRoutes);
 
 async function startServer() {
   try {
